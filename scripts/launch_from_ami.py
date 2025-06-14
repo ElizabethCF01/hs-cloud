@@ -1,11 +1,9 @@
 import boto3, time
-import os
+from config import *
 
 ec2 = boto3.client(
     'ec2',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name=REGION,
 )
 
 # Get latest AMI by name
@@ -19,30 +17,18 @@ print(f"Launching from AMI {ami_id}...")
 
 ec2_resource = boto3.resource(
     'ec2',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name=REGION,
 )
 start = time.time()
 
 instance = ec2_resource.create_instances(
     ImageId=ami_id,
     InstanceType='t2.micro',
-    KeyName=os.getenv('AWS_KEY_NAME', 'macbook-pro'),
+    KeyName=KEY_NAME,
     MinCount=1,
     MaxCount=1,
-    SecurityGroupIds=['sg-0ccb4081002d06870'],
-    TagSpecifications=[
-        {
-            'ResourceType': 'instance',
-            'Tags': [
-                {
-                    'Key': 'Name',
-                    'Value': 'Elizabeth Webserver'
-                },
-            ]
-        },
-    ]
+    SecurityGroupIds=[SECURITY_GROUP_ID],
+    TagSpecifications=TAG_SPEC,
 )[0]
 
 instance.wait_until_running()

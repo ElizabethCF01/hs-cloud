@@ -1,12 +1,11 @@
 import boto3
 import os
 import sys
+from config import *
 
 ec2 = boto3.client(
     'ec2',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name=REGION,
 )
 
 instance_id = sys.argv[1]

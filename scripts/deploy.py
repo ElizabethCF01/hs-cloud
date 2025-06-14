@@ -1,12 +1,11 @@
 import boto3
 import os
 import time
+from config import *
 
 ec2 = boto3.resource(
     'ec2',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name=REGION,
 )
 
 with open("install.sh") as f:
@@ -14,24 +13,14 @@ with open("install.sh") as f:
 
 start = time.time()
 instance = ec2.create_instances(
-    ImageId=os.getenv('AWS_AMI_ID', 'ami-09e6f87a47903347c'),
+    ImageId=BASE_AMI_ID,
     InstanceType='t2.micro',
-    KeyName=os.getenv('AWS_KEY_NAME', 'macbook-pro'),
+    KeyName=KEY_NAME,
     MinCount=1,
     MaxCount=1,
-    SecurityGroupIds=['sg-0ccb4081002d06870'],
+    SecurityGroupIds=[SECURITY_GROUP_ID],
     UserData=user_data_script,
-    TagSpecifications=[
-        {
-            'ResourceType': 'instance',
-            'Tags': [
-                {
-                    'Key': 'Name',
-                    'Value': 'Elizabeth Webserver'
-                },
-            ]
-        },
-    ]
+    TagSpecifications=TAG_SPEC
 )[0]
 
 print("Launching instance...")

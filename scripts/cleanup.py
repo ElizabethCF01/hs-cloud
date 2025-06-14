@@ -1,21 +1,18 @@
 import boto3
 import os
+from config import *
 
 ec2 = boto3.resource(
     'ec2',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name=REGION,
 )
 client = boto3.client(
     'ec2',
-    region_name=os.getenv('AWS_REGION', 'us-east-1'),
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    region_name=REGION,
 )
 
 print("Terminating instances...")
-for i in ec2.instances.filter(Filters=[{'Name': 'tag:Name', 'Values': ['Elizabeth Webserver']}]):
+for i in ec2.instances.filter(Filters=[{'Name': 'tag:Project', 'Values': ['HW2']}]):
     print(f"Terminating {i.id}")
     i.terminate()
 
