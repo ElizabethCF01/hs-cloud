@@ -1,37 +1,22 @@
-import axios from "axios";
-import { retry } from "../utils/retry";
-import { API_BASE_URL } from "../config";
+import { PrismaClient } from "@prisma/client";
+import { IncomingShift } from "../types";
+const prisma = new PrismaClient();
 
-export interface Shift {
-  companyId: string;
-  userId: string;
-  startTime: string;
-  endTime: string;
-  action: string;
-}
+export async function createBookingRequestWithShifts(shifts: IncomingShift[]) {
+  const parsedShifts = shifts.map((shift) => ({
+    ...shift,
+    startTime: new Date(shift.startTime),
+    endTime: new Date(shift.endTime),
+    status: "pending" as const,
+  }));
 
-function getShiftKey(shift: Shift): string {
-  return `${shift.companyId}-${shift.userId}-${shift.startTime}-${shift.endTime}`;
-}
+  const bookingRequest = await prisma.bookingRequest.create({
+    data: {
+      shifts: {
+        create: parsedShifts,
+      },
+    },
+  });
 
-export async function processShifts(shifts: Shift[]) {
-  const results = [];
-
-  for (const shift of shifts) {
-    const key = getShiftKey(shift);
-
-    try {
-      const response = await retry(() =>
-        axios.post(`${API_BASE_URL}/shift`, shift, {
-          headers: { "Content-Type": "application/json" },
-        })
-      );
-
-      results.push({ shift, data: response.data });
-    } catch (error) {
-      console.error(`Failed to process shift ${key}`);
-    }
-  }
-
-  return results;
+  return bookingRequest;
 }
