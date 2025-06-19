@@ -1,0 +1,28 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model BookingRequest {
+  id        String   @id @default(uuid())
+  status    String   @default("pending") // pending | processing | done | failed
+  createdAt DateTime @default(now())
+  shifts    Shift[]
+}
+
+model Shift {
+  id        String   @id @default(uuid())
+  requestId String
+  companyId String
+  userId    String
+  startTime DateTime
+  endTime   DateTime
+  action    String
+  status    String   @default("pending") // pending | success | failed
+
+  BookingRequest BookingRequest @relation(fields: [requestId], references: [id])
+}
