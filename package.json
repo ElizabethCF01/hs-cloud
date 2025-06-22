@@ -6,8 +6,10 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma && prisma generate --schema=./prisma/shard0/schema.prisma && prisma generate --schema=./prisma/shard1/schema.prisma",
-    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma && prisma generate --schema=./prisma/shard/schema.prisma",
+    "prisma:migrate:core": "prisma migrate dev --schema=./prisma/schema.prisma",
+    "prisma:migrate:shard0": "DATABASE_URL_SHARD=${DATABASE_URL_SHARD_0} prisma migrate dev --schema=./prisma/shard/schema.prisma",
+    "prisma:migrate:shard1": "DATABASE_URL_SHARD=${DATABASE_URL_SHARD_1} prisma migrate dev --schema=./prisma/shard/schema.prisma",
     "prisma:studio": "prisma studio"
   },
   "keywords": [],
