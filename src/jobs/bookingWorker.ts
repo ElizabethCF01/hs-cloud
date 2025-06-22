@@ -2,6 +2,10 @@ import { mainPrisma, shardClients, getShardForKey } from "../db/shards";
 import axios from "axios";
 import { API_BASE_URL } from "../config";
 import { retry } from "../utils/retry";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { AWS_REGION, SQS_QUEUE_URL } from "../config";
+
+const sqs = new SQSClient({ region: AWS_REGION });
 
 async function processPendingRequests() {
   const requests = await mainPrisma.bookingRequest.findMany({
@@ -45,10 +49,20 @@ async function processPendingRequests() {
           })
         );
 
-        await shardClient.shift.update({
+        const created = await shardClient.shift.update({
           where: { id: shift.id },
           data: { status: "success" },
         });
+
+        // Send message to SQS
+        await sqs.send(
+          new SendMessageCommand({
+            QueueUrl: SQS_QUEUE_URL,
+            MessageBody: JSON.stringify(created),
+            MessageGroupId: request.id,
+            MessageDeduplicationId: created.id,
+          })
+        );
       } catch (err) {
         await shardClient.shift.update({
           where: { id: shift.id },

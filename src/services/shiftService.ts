@@ -14,7 +14,7 @@ export async function createBookingRequestWithShifts(shifts: IncomingShift[]) {
   });
 
   for (const shift of parsedShifts) {
-     const client = getShardForKey(shift.userId);
+    const client = getShardForKey(shift.userId);
     await client.shift.create({
       data: { ...shift, requestId: bookingRequest.id },
     });

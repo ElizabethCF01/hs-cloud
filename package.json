@@ -15,6 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.831.0",
     "@prisma/client": "^6.9.0",
     "axios": "^1.9.0",
     "express": "^5.1.0",
