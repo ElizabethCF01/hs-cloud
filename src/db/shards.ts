@@ -1,9 +1,23 @@
 import { PrismaClient as MainClient } from "@prisma/client";
-import { PrismaClient as Shard0 } from "../generated/prisma/shard0";
-import { PrismaClient as Shard1 } from "../generated/prisma/shard1";
+import { PrismaClient as Shard } from "../generated/prisma/shard";
 
 export const mainPrisma = new MainClient();
-const shardClients = [new Shard0(), new Shard1()];
+const shardClients = [
+  new Shard({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL_SHARD_0,
+      },
+    },
+  }),
+  new Shard({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL_SHARD_1,
+      },
+    },
+  }),
+];
 
 // simple hash -> shard index
 export function getShardForKey(key: string) {

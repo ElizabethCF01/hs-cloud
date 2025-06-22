@@ -49,20 +49,21 @@ async function processPendingRequests() {
           })
         );
 
-        const created = await shardClient.shift.update({
-          where: { id: shift.id },
-          data: { status: "success" },
+        // Update shift status and enqueue outbox record atomically
+        const created = await shardClient.$transaction(async (tx: any) => {
+          const updated = await tx.shift.update({
+            where: { id: shift.id },
+            data: { status: "success" },
+          });
+          await tx.outbox.create({
+            data: {
+              aggregateId: updated.id,
+              eventType: "ShiftProcessed",
+              payload: updated,
+            },
+          });
+          return updated;
         });
-
-        // Send message to SQS
-        await sqs.send(
-          new SendMessageCommand({
-            QueueUrl: SQS_QUEUE_URL,
-            MessageBody: JSON.stringify(created),
-            MessageGroupId: request.id,
-            MessageDeduplicationId: created.id,
-          })
-        );
       } catch (err) {
         await shardClient.shift.update({
           where: { id: shift.id },
