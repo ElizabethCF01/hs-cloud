@@ -1,0 +1,29 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_SHARD")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/prisma/shard"
+}
+
+model Shift {
+  id        String   @id @default(uuid())
+  requestId String
+  companyId String
+  userId    String
+  startTime DateTime
+  endTime   DateTime
+  action    String
+  status    String   @default("pending")
+}
+
+model Outbox {
+  id          String   @id @default(uuid())
+  aggregateId String
+  eventType   String
+  payload     Json
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}

@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { mainPrisma, getShardForKey } from "../db/shards";
 import { IncomingShift } from "../types";
-const prisma = new PrismaClient();
 
 export async function createBookingRequestWithShifts(shifts: IncomingShift[]) {
   const parsedShifts = shifts.map((shift) => ({
@@ -10,13 +9,16 @@ export async function createBookingRequestWithShifts(shifts: IncomingShift[]) {
     status: "pending" as const,
   }));
 
-  const bookingRequest = await prisma.bookingRequest.create({
-    data: {
-      shifts: {
-        create: parsedShifts,
-      },
-    },
+  const bookingRequest = await mainPrisma.bookingRequest.create({
+    data: {},
   });
+
+  for (const shift of parsedShifts) {
+    const client = getShardForKey(shift.userId);
+    await client.shift.create({
+      data: { ...shift, requestId: bookingRequest.id },
+    });
+  }
 
   return bookingRequest;
 }

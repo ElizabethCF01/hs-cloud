@@ -45,7 +45,6 @@ router.get("/:requestId", async (_req: Request, res: any) => {
   try {
     const request = await prisma.bookingRequest.findUnique({
       where: { id: requestId },
-      include: { shifts: true },
     });
 
     if (!request) return res.status(404).json({ error: "Request not found" });
